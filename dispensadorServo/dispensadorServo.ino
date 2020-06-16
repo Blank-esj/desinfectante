@@ -1,11 +1,19 @@
+// Dispensador con un servo y un rele
+
+// Incluímos la librería para poder controlar el servo
+#include <Servo.h>
+
+// Declaramos la variable para controlar el servo
+Servo servoMotor;
+
 // Configuramos los pines del sensor Trigger y Echo
-const int pinTrigger = 6; // señal de pinTrigger a pin 6
-const int pinEcho = 5;    // señal de pinEcho a pin 5
+const int pinTrigger = 5; // señal de pinTrigger a pin 6
+const int pinEcho = 6;    // señal de pinEcho a pin 5
 
 // Configuramos los Reles
 const int releJabon = 4; // Relé para el jabón líquido
-const int releAgua = 3;  // Relé para el agua
-
+//const int releAgua = 3;  // Relé para el agua
+ 
 // Constante velocidad sonido en cm/s
 const float velocidadSonido = 34000.0;
 
@@ -23,8 +31,10 @@ void setup()
   pinMode(pinEcho, INPUT);       // Ponemos el pin Echo en modo entrada
   digitalWrite(pinTrigger, LOW); //Inicializamos el pin con 0
 
-  pinMode(releJabon, OUTPUT); // Ponemos el releJabon en modo salida
-  pinMode(releAgua, OUTPUT);  // Ponemos el releAgua en modo salida
+  pinMode(releJabon, OUTPUT);  // Ponemos el releJabon en modo salida
+
+  // Iniciamos el servo para que empiece a trabajar con el pin 9
+  servoMotor.attach(3);
 }
 
 void loop()
@@ -36,8 +46,11 @@ void loop()
 
   distancia = tiempo * 0.000001 * velocidadSonido / 2.0;
 
+  // Desplazamos a la posición 0º
+  servoMotor.write(0);
+
   // Cuando es la primera vez que se mide < 15cm encienda el releJabon
-  // Si es la segunda vez encianda el releAgua
+  // Si es la segunda vez encianda el servo
   if (distancia <= 15.0)
   {
     Serial.print("Dispensando ");
@@ -45,14 +58,19 @@ void loop()
     {
       Serial.println("jabon #####");
       digitalWrite(releJabon, HIGH); // Dispensamos jabon
-      digitalWrite(releAgua, LOW);   // Dejamos de dispensar agua
+
       dispensaraJabon = false;
     }
     else
     {
       Serial.println("agua -----");
-      digitalWrite(releAgua, HIGH); // Dispensamos agua
       digitalWrite(releJabon, LOW); // Dejamos de dispensar jabon
+      
+      // Desplazamos a la posición 180º
+      servoMotor.write(180);
+      // Esperamos 1 segundo
+      //delay(1000);
+
       dispensaraJabon = true;
     }
   }
@@ -62,7 +80,12 @@ void loop()
     // Dispensar Jaboon es igual a DispensaraJabon
     Serial.println("NO DISPENSA ");
     dispensarJabon = dispensaraJabon;
-    digitalWrite(releAgua, LOW);  // Dejamos de dispensar agua
+
+    // Desplazamos a la posición 0º
+    servoMotor.write(0);
+    // Esperamos 1 segundo
+    //delay(1000);
+
     digitalWrite(releJabon, LOW); // Dejamos de dispensar jabon
   }
 
